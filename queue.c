@@ -66,14 +66,13 @@ bool q_insert_head(queue_t *q, char *s)
     if (!q->head) {
         q->tail = newh;
     }
-
-    newh->next = q->head;
-    q->head = newh;
-
     s_new = malloc(sizeof(char) * (strlen(s) + 1));
     if (!s_new) {
+        free(newh);
         return false;
     }
+    newh->next = q->head;
+    q->head = newh;
     newh->value = s_new;
     memcpy(s_new, s, strlen(s) + 1);
     q->size++;
@@ -101,14 +100,15 @@ bool q_insert_tail(queue_t *q, char *s)
     if (!newh) {
         return false;
     }
+    s_new = malloc(sizeof(char) * (strlen(s) + 1));
+    if (!s_new) {
+        free(newh);
+        return false;
+    }
+
     newh->next = NULL;
     q->tail->next = newh;
     q->tail = newh;
-
-    s_new = malloc(sizeof(char) * (strlen(s) + 1));
-    if (!s_new) {
-        return false;
-    }
     newh->value = s_new;
     memcpy(s_new, s, strlen(s) + 1);
     q->size++;
@@ -136,8 +136,10 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     if (!q->head) {
         return false;
     }
-    memcpy(sp, q->head->value, bufsize);
-    sp[bufsize - 1] = '\0';
+    if (sp) {
+        memcpy(sp, q->head->value, bufsize);
+        sp[bufsize - 1] = '\0';
+    }
     free(q->head->value);
     delete_ptr = q->head;
     q->head = q->head->next;
