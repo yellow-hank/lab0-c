@@ -12,7 +12,7 @@
 queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
-    /* TODO: What if malloc returned NULL? */
+    // check malloc whether  allocating space sucess or not
     if (!q) {
         return q;
     }
@@ -25,11 +25,12 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-    /* TODO: How about freeing the list elements and the strings? */
-    /* Free queue structure */
     if (!q) {
         return;
     }
+    /* go through each list node to release value's space.
+     * After release value's space, release list node
+     */
     for (; q->head != NULL;) {
         free(q->head->value);
         list_ele_t *delete_node = q->head;
@@ -51,7 +52,7 @@ bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
     char *s_new;
-    /* TODO: What should you do if the q is NULL? */
+    // check malloc whether  allocating space sucess or not
     if (!q) {
         return false;
     }
@@ -59,20 +60,22 @@ bool q_insert_head(queue_t *q, char *s)
     if (!newh) {
         return false;
     }
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
-
+    // allocate space for string
     s_new = malloc(sizeof(char) * (strlen(s) + 1));
     if (!s_new) {
         free(newh);
         return false;
     }
+    // deal with the first time inserting node
     if (!q->head) {
         q->tail = newh;
     }
     newh->next = q->head;
     q->head = newh;
     newh->value = s_new;
+    /*using memcpy because strcpy may cause source string won't
+     * have a teminating character and it may crash program.
+     */
     memcpy(s_new, s, strlen(s) + 1);
     q->size++;
     return true;
@@ -87,9 +90,6 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* TODO: You need to write the complete code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
     list_ele_t *newh;
     char *s_new;
     if (!q) {
@@ -113,6 +113,9 @@ bool q_insert_tail(queue_t *q, char *s)
     }
     q->tail = newh;
     newh->value = s_new;
+    /*using memcpy because strcpy may cause source string won't
+     * have a teminating character and it may crash program.
+     */
     memcpy(s_new, s, strlen(s) + 1);
     q->size++;
 
@@ -130,8 +133,6 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    /* TODO: You need to fix up this code. */
-    /* TODO: Remove the above comment when you are about to implement. */
     list_ele_t *delete_ptr;
     if (!q) {
         return false;
@@ -157,9 +158,10 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
+    /* using a variable in queue_t to store size.After insert or remove
+     * operation increase or decrease size.With this implement, to reach time
+     * complexity O(1)
+     */
     if (!q) {
         return 0;
     }
@@ -175,8 +177,6 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
     list_ele_t *prev = NULL, *current, *next, *swap;
     if (!q) {
         return;
@@ -192,6 +192,7 @@ void q_reverse(queue_t *q)
     q->tail = swap;
 }
 
+/* insert node at list tail and change head and tail pointer*/
 void list_insert_tail(list_ele_t **head, list_ele_t **tail, list_ele_t *node)
 {
     if (*tail == NULL) {
@@ -248,13 +249,12 @@ list_ele_t *mergesort(list_ele_t *list)
  */
 void q_sort(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
     if (!q || !q->head || !q->head->next) {
         return;
     }
     list_ele_t *i;
     q->head = mergesort(q->head);
+    // update tail's information
     for (i = q->head; i->next != NULL; i = i->next)
         ;
     q->tail = i;
