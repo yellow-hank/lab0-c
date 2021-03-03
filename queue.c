@@ -42,6 +42,9 @@ bool q_insert_head(queue_t *q, char *s)
     list_ele_t *newh;
     char *s_new;
     /* TODO: What should you do if the q is NULL? */
+    if (!q) {
+        return false;
+    }
     newh = malloc(sizeof(list_ele_t));
 
     if (!newh) {
@@ -84,7 +87,9 @@ bool q_insert_tail(queue_t *q, char *s)
         return false;
     }
     newh = malloc(sizeof(list_ele_t));
-
+    if (!newh) {
+        return false;
+    }
     newh->next = NULL;
     q->tail->next = newh;
     q->tail = newh;
@@ -114,6 +119,9 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     /* TODO: You need to fix up this code. */
     /* TODO: Remove the above comment when you are about to implement. */
     list_ele_t *delete_ptr;
+    if (!q) {
+        return false;
+    }
     if (!q->head) {
         return false;
     }
