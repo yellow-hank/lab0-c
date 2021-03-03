@@ -27,6 +27,8 @@ void q_free(queue_t *q)
 {
     /* TODO: How about freeing the list elements and the strings? */
     /* Free queue structure */
+
+
     free(q);
 }
 
@@ -231,6 +233,10 @@ void q_sort(queue_t *q)
     if (!q || !q->head || !q->head->next) {
         return;
     }
+    list_ele_t *i;
 
     quicksort(&q->head);
+    for (i = q->head; i->next != NULL; i = i->next)
+        ;
+    q->tail = i;
 }
