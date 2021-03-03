@@ -176,6 +176,49 @@ void q_reverse(queue_t *q)
     q->tail = swap;
 }
 
+
+void list_add(list_ele_t **list, list_ele_t *node)
+{
+    node->next = *list;
+    *list = node;
+}
+
+void list_concat(list_ele_t **left, list_ele_t *right)
+{
+    while (*left) {
+        left = &((*left)->next);
+    }
+    *left = right;
+}
+
+void quicksort(list_ele_t **list)
+{
+    if (!*list) {
+        return;
+    }
+
+    list_ele_t *pivot = *list;
+    char *value = pivot->value;
+    list_ele_t *p = pivot->next;
+    pivot->next = NULL;
+
+    list_ele_t *left = NULL, *right = NULL;
+    while (p) {
+        list_ele_t *n = p;
+        p = p->next;
+        list_add(strcmp(n->value, value) > 0 ? &right : &left, n);
+    }
+
+    quicksort(&left);
+    quicksort(&right);
+
+    list_ele_t *result = NULL;
+    list_concat(&result, left);
+    list_concat(&result, pivot);
+    list_concat(&result, right);
+    *list = result;
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
@@ -185,4 +228,9 @@ void q_sort(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head || !q->head->next) {
+        return;
+    }
+
+    quicksort(&q->head);
 }
