@@ -192,47 +192,53 @@ void q_reverse(queue_t *q)
     q->tail = swap;
 }
 
-
-void list_add(list_ele_t **list, list_ele_t *node)
+void list_insert_tail(list_ele_t **head, list_ele_t **tail, list_ele_t *node)
 {
-    node->next = *list;
-    *list = node;
+    if (*tail == NULL) {
+        *tail = node;
+        *head = node;
+    } else {
+        (*tail)->next = node;
+        (*tail) = node;
+    }
 }
 
-void list_concat(list_ele_t **left, list_ele_t *right)
+list_ele_t *merge(list_ele_t *first, list_ele_t *second)
 {
-    while (*left) {
-        left = &((*left)->next);
+    list_ele_t *result_head = NULL, *result_tail = NULL;
+    while (first && second) {
+        // compare and put the smaller one in result
+        if (strcmp(first->value, second->value) <= 0) {
+            list_insert_tail(&result_head, &result_tail, first);
+            first = first->next;
+        } else {
+            list_insert_tail(&result_head, &result_tail, second);
+            second = second->next;
+        }
     }
-    *left = right;
+    // Find the list that still have data, and add it in result
+    if (first) {
+        list_insert_tail(&result_head, &result_tail, first);
+    }
+    if (second) {
+        list_insert_tail(&result_head, &result_tail, second);
+    }
+    return result_head;
 }
 
-void quicksort(list_ele_t **list)
+list_ele_t *mergesort(list_ele_t *list)
 {
-    if (!*list) {
-        return;
+    if (!list->next) {
+        return list;
     }
-
-    list_ele_t *pivot = *list;
-    char *value = pivot->value;
-    list_ele_t *p = pivot->next;
-    pivot->next = NULL;
-
-    list_ele_t *left = NULL, *right = NULL;
-    while (p) {
-        list_ele_t *n = p;
-        p = p->next;
-        list_add(strcmp(n->value, value) > 0 ? &right : &left, n);
+    list_ele_t *slow = list, *fast = list->next;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
     }
-
-    quicksort(&left);
-    quicksort(&right);
-
-    list_ele_t *result = NULL;
-    list_concat(&result, left);
-    list_concat(&result, pivot);
-    list_concat(&result, right);
-    *list = result;
+    list_ele_t *tmp = slow->next;
+    slow->next = NULL;
+    return merge(mergesort(list), mergesort(tmp));
 }
 
 /*
@@ -248,8 +254,7 @@ void q_sort(queue_t *q)
         return;
     }
     list_ele_t *i;
-
-    quicksort(&q->head);
+    q->head = mergesort(q->head);
     for (i = q->head; i->next != NULL; i = i->next)
         ;
     q->tail = i;
