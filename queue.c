@@ -30,11 +30,10 @@ void q_free(queue_t *q)
     if (!q) {
         return;
     }
-    list_ele_t *i;
-    for (i = q->head; i != NULL;) {
-        free(i->value);
-        list_ele_t *delete_node = i;
-        i = i->next;
+    for (; q->head != NULL;) {
+        free(q->head->value);
+        list_ele_t *delete_node = q->head;
+        q->head = q->head->next;
         free(delete_node);
     }
 
@@ -57,19 +56,19 @@ bool q_insert_head(queue_t *q, char *s)
         return false;
     }
     newh = malloc(sizeof(list_ele_t));
-
     if (!newh) {
         return false;
     }
     /* Don't forget to allocate space for the string and copy it */
     /* What if either call to malloc returns NULL? */
-    if (!q->head) {
-        q->tail = newh;
-    }
+
     s_new = malloc(sizeof(char) * (strlen(s) + 1));
     if (!s_new) {
         free(newh);
         return false;
+    }
+    if (!q->head) {
+        q->tail = newh;
     }
     newh->next = q->head;
     q->head = newh;
@@ -107,7 +106,11 @@ bool q_insert_tail(queue_t *q, char *s)
     }
 
     newh->next = NULL;
-    q->tail->next = newh;
+    if (q->tail) {
+        q->tail->next = newh;
+    } else {
+        q->head = newh;
+    }
     q->tail = newh;
     newh->value = s_new;
     memcpy(s_new, s, strlen(s) + 1);
