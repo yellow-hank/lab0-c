@@ -36,6 +36,7 @@ struct PELE {
     /* Function that gets called whenever parameter changes */
     setter_function setter;
     param_ptr next;
+    bool checkboolint;
 };
 
 /* Initialize interpreter */
@@ -48,7 +49,8 @@ void add_cmd(char *name, cmd_function operation, char *documentation);
 void add_param(char *name,
                int *valp,
                char *doccumentation,
-               setter_function setter);
+               setter_function setter,
+               bool setbool);
 
 /* Extract integer from text and store at loc */
 bool get_int(char *vname, int *loc);

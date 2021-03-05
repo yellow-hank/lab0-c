@@ -102,10 +102,11 @@ void init_cmd()
     add_cmd("time", do_time_cmd, " cmd arg ...    | Time command execution");
     add_cmd("#", do_comment_cmd, " ...            | Display comment");
     add_param("simulation", (int *) &simulation, "Start/Stop simulation mode",
-              NULL);
-    add_param("verbose", &verblevel, "Verbosity level", NULL);
-    add_param("error", &err_limit, "Number of errors until exit", NULL);
-    add_param("echo", (int *) &echo, "Do/don't echo commands", NULL);
+              NULL, (bool) 1);
+    add_param("verbose", &verblevel, "Verbosity level", NULL, (bool) 0);
+    add_param("error", &err_limit, "Number of errors until exit", NULL,
+              (bool) 0);
+    add_param("echo", (int *) &echo, "Do/don't echo commands", NULL, (bool) 1);
 
     init_in();
     init_time(&last_time);
@@ -134,7 +135,8 @@ void add_cmd(char *name, cmd_function operation, char *documentation)
 void add_param(char *name,
                int *valp,
                char *documentation,
-               setter_function setter)
+               setter_function setter,
+               bool setbool)
 {
     param_ptr next_param = param_list;
     param_ptr *last_loc = &param_list;
@@ -148,6 +150,7 @@ void add_param(char *name,
     ele->valp = valp;
     ele->documentation = documentation;
     ele->setter = setter;
+    ele->checkboolint = setbool;
     ele->next = next_param;
     *last_loc = ele;
 }
@@ -304,8 +307,12 @@ static bool do_help_cmd(int argc, char *argv[])
     param_ptr plist = param_list;
     report(1, "Options:");
     while (plist) {
-        report(1, "\t%s\t%d\t%s", plist->name, *plist->valp,
-               plist->documentation);
+        if (plist->checkboolint)
+            report(1, "\t%s\t%d\t%s", plist->name, *(bool *) plist->valp,
+                   plist->documentation);
+        else
+            report(1, "\t%s\t%d\t%s", plist->name, *plist->valp,
+                   plist->documentation);
         plist = plist->next;
     }
     return true;

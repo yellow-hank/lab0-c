@@ -42,7 +42,7 @@ deps := $(OBJS:%.o=.%.o.d)
 
 qtest: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm -g
 
 %.o: %.c
 	@mkdir -p .$(DUT_DIR)
