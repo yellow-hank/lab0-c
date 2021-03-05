@@ -62,6 +62,7 @@ bool q_insert_head(queue_t *q, char *s)
     }
     // allocate space for string
     s_new = malloc(sizeof(char) * (strlen(s) + 1));
+
     if (!s_new) {
         free(newh);
         return false;
@@ -73,10 +74,10 @@ bool q_insert_head(queue_t *q, char *s)
     newh->next = q->head;
     q->head = newh;
     newh->value = s_new;
-    /*using memcpy because strcpy may cause source string won't
+    /*using memmove because strcpy may cause source string won't
      * have a teminating character and it may crash program.
      */
-    memcpy(s_new, s, strlen(s) + 1);
+    memmove(s_new, s, strlen(s) + 1);
     q->size++;
     return true;
 }
@@ -113,10 +114,10 @@ bool q_insert_tail(queue_t *q, char *s)
     }
     q->tail = newh;
     newh->value = s_new;
-    /*using memcpy because strcpy may cause source string won't
+    /*using memmove because strcpy may cause source string won't
      * have a teminating character and it may crash program.
      */
-    memcpy(s_new, s, strlen(s) + 1);
+    memmove(s_new, s, strlen(s) + 1);
     q->size++;
 
 
@@ -140,9 +141,16 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     if (!q->head) {
         return false;
     }
+    int string_len = strlen(q->head->value);
     if (sp) {
-        memcpy(sp, q->head->value, bufsize);
-        sp[bufsize - 1] = '\0';
+        // check list value is bigger than bufsize
+        if (bufsize < string_len + 1) {
+            memmove(sp, q->head->value, bufsize);
+            sp[bufsize - 1] = '\0';
+        } else {
+            memmove(sp, q->head->value, string_len + 1);
+            sp[string_len] = '\0';
+        }
     }
     free(q->head->value);
     delete_ptr = q->head;
