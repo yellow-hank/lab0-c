@@ -18,6 +18,9 @@
 #define INTERNAL 1
 #include "harness.h"
 
+/* web server */
+#include "tiny.h"
+
 /* What character limit will be used for displaying strings? */
 #define MAXSTRING 1024
 
@@ -59,6 +62,10 @@ static size_t qcnt = 0;
 static int fail_limit = BIG_QUEUE;
 static int fail_count = 0;
 
+// for forking web
+static int web_server_pid = 0;
+static bool web_server_open = 0;
+
 static int string_length = MAXSTRING;
 
 #define MIN_RANDSTR_LEN 5
@@ -77,6 +84,9 @@ static bool do_reverse(int argc, char *argv[]);
 static bool do_size(int argc, char *argv[]);
 static bool do_sort(int argc, char *argv[]);
 static bool do_show(int argc, char *argv[]);
+static bool do_open_web(int argc, char *argv[]);
+static bool do_close_web(int argc, char *argv[]);
+
 
 static void queue_init();
 
@@ -101,6 +111,8 @@ static void console_init()
     add_cmd("size", do_size,
             " [n]            | Compute queue size n times (default: n == 1)");
     add_cmd("show", do_show, "                | Show queue contents");
+    add_cmd("web", do_open_web, "                | run a webserver");
+    add_cmd("closeweb", do_close_web, "                | close webserver");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL, (bool) 0);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
@@ -630,6 +642,32 @@ static bool do_show(int argc, char *argv[])
     return show_queue(0);
 }
 
+static bool do_open_web(int argc, char *argv[])
+{
+    report(1, "creating web server now...");
+
+    web_server_pid = fork();
+    if (web_server_pid == 0) {
+        open_web(argc, argv);
+    } else if (web_server_pid > 0) {
+        printf("child's pid = %d\n", web_server_pid);
+        web_server_open |= (bool) 1;
+    } else {
+        perror("fork");
+    }
+
+    return true;
+}
+
+static bool do_close_web(int argc, char *argv[])
+{
+    report(1, "closing web server...");
+    printf("pid is%d\n", web_server_pid);
+    kill(web_server_pid, SIGKILL);
+    web_server_open &= (bool) 0;
+    return true;
+}
+
 /* Signal handlers */
 static void sigsegvhandler(int sig)
 {
@@ -671,6 +709,12 @@ static bool queue_quit(int argc, char *argv[])
         report(1, "ERROR: Freed queue, but %lu blocks are still allocated",
                bcnt);
         return false;
+    }
+
+    // close web server if haven't close
+    if (web_server_open) {
+        // printf("kill web server from quit\n");
+        kill(web_server_pid, SIGKILL);
     }
 
     return true;
